@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useFormik } from "formik";
-import * as Yup from "yup";
 import { agbalumo } from "@/ui/fonts";
 import { useDropzone } from "react-dropzone";
-import Image from "next/image";
+import Modal, { showModal } from "./Modal";
 
 interface FileWithPreview extends File {
   preview: string;
@@ -17,86 +16,50 @@ const PredictImage = () => {
   const [prediction, setPrediction] = useState<string>("");
   const [file, setFile] = useState<FileWithPreview>({} as FileWithPreview);
 
+  const serverTestURL = process.env.NEXT_PUBLIC_ENDPOINT_URL + "/";
+  const serverURL = process.env.NEXT_PUBLIC_ENDPOINT_URL + "/predict";
+
   const { getRootProps, getInputProps } = useDropzone({
     maxFiles: 1,
     accept: {
       "image/*": [".jpeg", ".png", ".jpg"],
     },
     onDrop: (acceptedFiles) => {
-      setFile(
-        Object.assign(acceptedFiles[0], {
-          preview: URL.createObjectURL(acceptedFiles[0]),
-        })
-      );
       const reader = new FileReader();
-      if (file.preview) {
-        setBase64Image(file.preview);
-      }
+
+      reader.onload = () => {
+        setBase64Image(reader.result as string);
+        setFile(
+          Object.assign(acceptedFiles[0], {
+            preview: URL.createObjectURL(acceptedFiles[0]),
+          })
+        );
+      };
+
       reader.readAsDataURL(acceptedFiles[0]);
-      console.log(acceptedFiles);
     },
   });
-
-  const validationSchema = Yup.object().shape({
-    upload: Yup.mixed().required("Please upload an image"),
-  });
-
-  const thumb = (
-    <div>
-      <div>
-        <Image
-          alt="Your image"
-          src={file.preview}
-          className="block w-auto h-full"
-          onLoad={() => {
-            URL.revokeObjectURL(file.preview);
-          }}
-          width={100}
-          height={100}
-        />
-      </div>
-    </div>
-  );
 
   const formik = useFormik({
     initialValues: {
       upload: null,
     },
-    validationSchema: validationSchema,
     onSubmit: () => {
-      console.log(file);
       handlePredictClick();
     },
   });
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(file);
-
-    if (!file.preview) return;
-
-    const reader = new FileReader();
-    reader.onload = (event: ProgressEvent<FileReader>) => {
-      if (
-        event.target &&
-        event.target.result &&
-        typeof event.target.result === "string"
-      ) {
-        const dataURL = event.target.result;
-        setBase64Image(dataURL.replace("data:image/jpeg;base64,", ""));
-      }
-    };
-    reader.readAsDataURL(file);
-  };
-
   useEffect(() => {
-    return () => URL.revokeObjectURL(file.preview);
+    fetch(serverTestURL)
+      .then((data) => data.json())
+      .then((data) => console.log(data));
   }, []);
 
   const handlePredictClick = () => {
-    setBase64Image(base64Image.replace("data:image/jpeg;base64,", ""));
-    const message = { image: base64Image };
-
-    const serverURL = "https://image-classifier-kdd0.onrender.com/predict";
+    const message = {
+      image: base64Image.replace("data:image/jpeg;base64,", ""),
+    };
+    console.log(message);
 
     setIsLoading(true);
     fetch(serverURL, {
@@ -105,17 +68,28 @@ const PredictImage = () => {
       headers: {
         "Content-Type": "application/json",
       },
+      mode: "cors",
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-        setPrediction(data?.prediction);
+        setPrediction(data.prediction);
+        showModal();
+        setIsLoading(false);
       })
-      .catch((error) => console.error(error));
+      .catch((error) => {
+        console.error(error);
+        setIsLoading(false);
+        setPrediction("Error");
+        showModal();
+      });
   };
 
+  useEffect(() => {
+    console.log(prediction);
+  }, [prediction]);
+
   return (
-    <div id="model" className="w-screen max-w-[1200px] my-5">
+    <div id="model" className="w-screen max-w-[1200px] mt-5 mb-16">
       <h1
         className={`text-[4rem] ${agbalumo.className} uppercase text-center text-orange-500`}
       >
@@ -125,47 +99,61 @@ const PredictImage = () => {
         onSubmit={formik.handleSubmit}
         className="flex flex-col items-center justify-center"
       >
-        <p className="mt-8">{file.name && "📁 " + file.name}</p>
+        {file.name && (
+          <p className="mt-4">
+            📁 {file.name}
+            <button
+              className="ml-2"
+              onClick={() => {
+                setFile({} as FileWithPreview);
+                setBase64Image("");
+              }}
+            >
+              ✖️
+            </button>
+          </p>
+        )}
         <div
-          style={{
-            backgroundImage: `url(${file.preview})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
+          style={
+            file.name
+              ? {
+                  backgroundImage: `url(${file.preview})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }
+              : {}
+          }
           {...getRootProps({
             className:
-              `dropzone w-[90%] md:w-[50%] ${
-                !file.preview && "border-gray-500"
-              } mx-auto h-[300px] rounded-3xl flex flex-col` +
-              ` justify-center items-center mb-8 cursor-pointer border-4 border-gray-500 ${
-                formik.errors.upload && "border-red-500"
-              }  border-dashed`,
+              `dropzone w-[90%] md:w-[50%] mx-auto h-[300px] rounded-3xl flex flex-col` +
+              ` justify-center items-center mb-8 cursor-pointer border-4 border-gray-500 border-dashed`,
           })}
         >
-          <input
-            id="upload"
-            onChange={handleImageChange}
-            onBlur={formik.handleBlur}
-            {...getInputProps()}
-          />
-          {formik.errors.upload && (
+          <input id="upload" name="upload" {...getInputProps()} />
+          {/* {formik.errors.upload && (
             <div className="text-red-500">{formik.errors.upload}</div>
-          )}
+          )} */}
           <p>{!file.name && "Drop some files here or click to select files"}</p>
         </div>
 
-        <input
+        <button
           type="submit"
-          value={isLoading ? "Predicting..." : "Predict"}
           id="predict-button"
           className={`mx-auto bg-green-600 py-4 md:py-5 px-8 md:px-10 text-xl rounded-full text-white font-bold ${
             isLoading
               ? "pointer-events-none cursor-not-allowed"
               : "cursor-pointer"
-          }`}
-        />
-        <div>{prediction}</div>
+          } ${!file.name && "opacity-80 pointer-events-none"}`}
+          disabled={file.name ? false : true}
+        >
+          {isLoading ? (
+            <span className="loading loading-dots loading-md"></span>
+          ) : (
+            "Predict"
+          )}
+        </button>
       </form>
+      <Modal prediction={prediction} />
     </div>
   );
 };
