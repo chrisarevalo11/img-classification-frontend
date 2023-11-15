@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "daisyui": "^3.9.4",
     "formik": "^2.4.5",
     "next": "14.0.1",
     "react": "^18",
