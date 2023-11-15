@@ -11,7 +11,7 @@ export default function Hero(): React.ReactElement {
       </h1>
       <h2 className="text-white text-xl md:text-3xl text-center md:w-[80%] font-bold">
         Give us an image of a vehicle (van, car, motorcycle or bicycles only for
-        now) and our ML model will tell you what it thinks it is
+        now) and our Machine Learning model will tell you what it thinks it is
       </h2>
       <a
         href="#model"
@@ -25,28 +25,28 @@ export default function Hero(): React.ReactElement {
           alt={"bicycle"}
           width={150}
           height={150}
-          className="w-[60px] md:w-[150]"
+          className="w-[60px] md:w-[150px]"
         />
         <Image
           src={"/car.svg"}
           alt={"car"}
           width={150}
           height={150}
-          className="w-[60px] md:w-[150]"
+          className="w-[60px] md:w-[150px]"
         />
         <Image
           src={"/bike.svg"}
           alt={"bike"}
           width={150}
           height={150}
-          className="w-[60px] md:w-[150]"
+          className="w-[60px] md:w-[150px]"
         />
         <Image
           src={"/van.svg"}
           alt={"van"}
           width={150}
           height={150}
-          className="w-[60px] md:w-[150]"
+          className="w-[60px] md:w-[150px]"
         />
       </div>
     </section>
