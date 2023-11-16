@@ -74,7 +74,9 @@ const PredictImage = () => {
       .then((data) => {
         setPrediction(data.prediction);
         showModal();
-        setIsLoading(false);
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 2000);
       })
       .catch((error) => {
         console.error(error);
@@ -91,7 +93,7 @@ const PredictImage = () => {
   return (
     <div id="model" className="w-screen max-w-[1200px] mt-5 mb-16">
       <h1
-        className={`text-[4rem] ${agbalumo.className} uppercase text-center text-orange-500`}
+        className={`text-[2rem] md:text-[4rem] ${agbalumo.className} uppercase text-center text-orange-500`}
       >
         Test ML model
       </h1>
