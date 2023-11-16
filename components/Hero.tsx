@@ -3,9 +3,9 @@ import Image from "next/image";
 
 export default function Hero(): React.ReactElement {
   return (
-    <section className="w-screen md:w-[95vw] mx-auto max-w-[1200px] min-h-[70vh] flex flex-col justify-center items-center bg-orange-500 rounded-3xl px-5 md:px-10 py-8 md:py-16 relative mt-10 gap-5 ">
+    <section className="w-screen md:w-[95vw] mx-auto max-w-[1200px] min-h-[70vh] flex flex-col justify-center items-center bg-orange-500 rounded-3xl px-5 md:px-10 py-8 md:py-12 relative mt-10 gap-5 ">
       <h1
-        className={`text-[3rem] md:text-[5rem] ${agbalumo.className} md:px-5 text-white mt-14 text-center`}
+        className={`text-[2.5rem] md:text-[5rem] ${agbalumo.className} md:px-5 text-white mt-14 text-center`}
       >
         Vehicle Image Classification
       </h1>
@@ -19,7 +19,7 @@ export default function Hero(): React.ReactElement {
       >
         Test it
       </a>
-      <div className="flex gap-4 md:gap-8 my-5 items-center">
+      <div className="flex gap-4 md:gap-8 my-2 items-center">
         <Image
           src={"/bicycle.svg"}
           alt={"bicycle"}
